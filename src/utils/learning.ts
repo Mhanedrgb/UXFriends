@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+﻿import { prisma } from "@/lib/prisma";
 
 // Check if section is unlocked
 export const isSectionUnlocked = async (
@@ -27,7 +27,7 @@ export const isSectionUnlocked = async (
       where: {
         userId,
         lessonId: {
-          in: unit.lessons.map((l) => l.id),
+          in: unit.lessons.map((l: any) => l.id),
         },
       },
     });
@@ -78,7 +78,7 @@ export const isUnitUnlocked = async (
     where: {
       userId,
       lessonId: {
-        in: previousUnit.lessons.map((l) => l.id),
+        in: previousUnit.lessons.map((l: any) => l.id),
       },
     },
   });
@@ -184,24 +184,24 @@ export const getUserLearningProgress = async (userId: string) => {
   });
 
   const progressData = await Promise.all(
-    sections.map(async (section) => {
+    sections.map(async (section: any) => {
       const isUnlocked = await isSectionUnlocked(userId, section.id);
 
       const unitProgress = await Promise.all(
-        section.units.map(async (unit) => {
+        section.units.map(async (unit: any) => {
           const unitUnlocked = await isUnitUnlocked(userId, unit.id);
 
           const completedLessons = await prisma.lessonCompletion.count({
             where: {
               userId,
               lessonId: {
-                in: unit.lessons.map((l) => l.id),
+                in: unit.lessons.map((l: any) => l.id),
               },
             },
           });
 
           const lessonProgress = await Promise.all(
-            unit.lessons.map(async (lesson) => {
+            unit.lessons.map(async (lesson: any) => {
               const lessonUnlocked = await isLessonUnlocked(userId, lesson.id);
               const completed = await prisma.lessonCompletion.findUnique({
                 where: {
@@ -232,7 +232,7 @@ export const getUserLearningProgress = async (userId: string) => {
       );
 
       const totalLessons = section.units.reduce(
-        (sum, u) => sum + u.lessons.length,
+        (sum: number, u: any) => sum + u.lessons.length,
         0
       );
       const completedLessons = await prisma.lessonCompletion.count({
@@ -259,3 +259,6 @@ export const getUserLearningProgress = async (userId: string) => {
 
   return progressData;
 };
+
+
+

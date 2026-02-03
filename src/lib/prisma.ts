@@ -1,16 +1,34 @@
-﻿import PrismaPkg from "@prisma/client";
+﻿import { PrismaClient } from "@prisma/client";
 
-const PrismaClientCtor: any = (PrismaPkg as any).PrismaClient ?? (PrismaPkg as any).default ?? PrismaPkg;
+const globalWithPrisma = globalThis as typeof globalThis & {
+  prisma?: PrismaClient;
+};
 
-const prismaClientSingleton = () => new PrismaClientCtor();
+let prisma: PrismaClient;
 
-type PrismaClientSingleton = ReturnType<typeof prismaClientSingleton>;
+if (
+  process.env.DATABASE_URL === undefined ||
+  process.env.DATABASE_URL === ""
+) {
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("DATABASE_URL environment variable is not set");
+  }
+  // In development/build, create a dummy client that won''t fail
+  console.warn(
+    "[Prisma] DATABASE_URL not set, using mock Prisma client for build-time."
+  );
+  prisma = {} as PrismaClient;
+} else {
+  prisma =
+    globalWithPrisma.prisma ||
+    new PrismaClient({
+      log: process.env.DEBUG_PRISMA === "true" ? ["query", "info"] : [],
+    });
+}
 
-const globalForPrisma = globalThis as unknown as { prisma?: PrismaClientSingleton };
+if (process.env.NODE_ENV !== "production") {
+  globalWithPrisma.prisma = prisma;
+}
 
-const prisma: PrismaClientSingleton = globalForPrisma.prisma ?? prismaClientSingleton();
-
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
-
-export { prisma };
 export default prisma;
+export { prisma };

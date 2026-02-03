@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+﻿import { prisma } from "@/lib/prisma";
 
 // XP Reward constants
 export const XP_REWARDS = {
@@ -27,7 +27,7 @@ export const calculateTotalXP = async (userId: string): Promise<number> => {
     where: { userId },
   });
 
-  return history.reduce((sum, entry) => sum + entry.amount, 0);
+  return history.reduce((sum: number, entry: { amount: number }) => sum + (entry.amount ?? 0), 0);
 };
 
 // Add XP to user
@@ -110,7 +110,7 @@ export const checkAndAwardBadges = async (userId: string): Promise<void> => {
     where: { userId },
   });
 
-  const existingBadgeNames = existingBadges.map((b) => b.name);
+  const existingBadgeNames = existingBadges.map((b: { name: string }) => b.name);
 
   if (totalXP >= 100 && !existingBadgeNames.includes("Bronze")) {
     await prisma.badge.create({
@@ -152,3 +152,4 @@ export const checkAndAwardBadges = async (userId: string): Promise<void> => {
     });
   }
 };
+
