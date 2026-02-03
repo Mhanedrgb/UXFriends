@@ -1,13 +1,11 @@
-﻿datasource db {
+datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 generator client {
   provider = "prisma-client-js"
 }
 
-// ============= USER MODELS =============
 model User {
   id                    String    @id @default(cuid())
   email                 String    @unique
@@ -18,7 +16,6 @@ model User {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
-  // Relations
   lessonCompletions     LessonCompletion[]
   xpHistory             XPHistory[]
   badges                Badge[]
@@ -28,6 +25,7 @@ model User {
   projects              Project[]
   progressReports       ProgressReport[]
   leaderboardEntries    LeaderboardEntry[]
+  challenges            Challenge[]
 }
 
 model Streak {
@@ -40,7 +38,6 @@ model Streak {
   updatedAt       DateTime @updatedAt
 }
 
-// ============= LEARNING MODELS =============
 model Section {
   id          String   @id @default(cuid())
   title       String
@@ -50,35 +47,39 @@ model Section {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  units Unit[]
+  units       Unit[]
 }
 
 model Unit {
-  id        String   @id @default(cuid())
-  title     String
-  sectionId String
-  section   Section  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-  order     Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  sectionId   String
+  section     Section  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  icon        String?
+  order       Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  lessons Lesson[]
+  lessons     Lesson[]
 
   @@unique([sectionId, order])
 }
 
 model Lesson {
-  id        String   @id @default(cuid())
-  title     String
-  content   String?
-  unitId    String
-  unit      Unit     @relation(fields: [unitId], references: [id], onDelete: Cascade)
-  order     Int
-  duration  Int?     @default(5)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  unitId      String
+  unit        Unit     @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  content     String?
+  videoUrl    String?
+  order       Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   completions LessonCompletion[]
+  quizzes     Quiz[]
   notes       Note[]
 
   @@unique([unitId, order])
@@ -90,20 +91,22 @@ model LessonCompletion {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   lessonId  String
   lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  completedAt DateTime @default(now())
+  completed Boolean  @default(true)
+  xpEarned  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([userId, lessonId])
 }
 
-// ============= GAMIFICATION MODELS =============
 model XPHistory {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  amount    Int
-  reason    String
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount     Int
+  reason     String
   activityId String?
-  createdAt DateTime @default(now())
+  createdAt  DateTime @default(now())
 }
 
 model Badge {
@@ -112,44 +115,33 @@ model Badge {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   name      String
   icon      String?
-  earnedAt  DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@unique([userId, name])
 }
 
-// ============= ASSESSMENT MODELS =============
 model Quiz {
   id        String   @id @default(cuid())
-  title     String
-  unitId    String?
-  passingScore Int  @default(70)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  lessonId  String
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   questions QuizQuestion[]
   attempts  QuizAttempt[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model QuizQuestion {
-  id      String @id @default(cuid())
-  quizId  String
-  quiz    Quiz   @relation(fields: [quizId], references: [id], onDelete: Cascade)
-  question String
-  type    String @default("multiple-choice")
-  order   Int
+  id        String   @id @default(cuid())
+  quizId    String
+  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  text      String
+  type      String   @default("multiple_choice")
+  options   String?
+  correct   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  options QuizOption[]
   answers QuizAnswer[]
-
-  @@unique([quizId, order])
-}
-
-model QuizOption {
-  id         String @id @default(cuid())
-  questionId String
-  question   QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  text       String
-  isCorrect  Boolean @default(false)
 }
 
 model QuizAttempt {
@@ -159,87 +151,86 @@ model QuizAttempt {
   quizId    String
   quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
   score     Int
-  passed    Boolean
+  total     Int
+  answers   QuizAnswer[]
   createdAt DateTime @default(now())
-
-  answers QuizAnswer[]
 }
 
 model QuizAnswer {
-  id        String @id @default(cuid())
-  attemptId String
-  attempt   QuizAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  id         String   @id @default(cuid())
+  attemptId  String
+  attempt    QuizAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
   questionId String
-  question  QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  selectedOptionId String?
+  question   QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  answer     String
+  isCorrect  Boolean
+  createdAt  DateTime @default(now())
 }
 
-// ============= NOTES MODEL =============
 model Note {
   id        String   @id @default(cuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  lessonId  String
-  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lessonId  String?
+  lesson    Lesson?  @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  title     String
   content   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-// ============= PROJECT & PORTFOLIO MODELS =============
 model Project {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  url         String?
+  completed   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model LeaderboardEntry {
   id        String   @id @default(cuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  title     String
-  description String?
-  image     String?
-  url       String?
+  xpTotal   Int
+  rank      Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([userId])
 }
 
-model Certificate {
-  id        String   @id @default(cuid())
-  title     String
-  description String?
-  image     String?
-  createdAt DateTime @default(now())
-}
-
-// ============= CHALLENGES MODEL =============
-model Challenge {
-  id        String   @id @default(cuid())
-  title     String
-  description String?
-  icon      String?
-  xpReward  Int      @default(30)
-  createdAt DateTime @default(now())
-}
-
-// ============= LEADERBOARD MODEL =============
-model LeaderboardEntry {
-  id            String   @id @default(cuid())
-  userId        String
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  weekStartDate DateTime
-  totalXP       Int      @default(0)
-  rank          Int?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  @@unique([userId, weekStartDate])
-}
-
-// ============= AI PROGRESS REPORT MODEL =============
 model ProgressReport {
   id            String   @id @default(cuid())
   userId        String
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type          String
-  strengths     String?
-  weaknesses    String?
+  summary       String?
   recommendations String?
   generatedAt   DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
+model Certificate {
+  id        String   @id @default(cuid())
+  userId    String
+  sectionId String
+  name      String
+  issuedAt  DateTime @default(now())
+  createdAt DateTime @default(now())
+}
+
+model Challenge {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  completed   Boolean  @default(false)
+  reward      Int      @default(10)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
