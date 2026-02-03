@@ -2,6 +2,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { addXP, checkAndAwardBadges, XP_REWARDS } from "@/utils/gamification";
 import { NextRequest, NextResponse } from "next/server";
+export const dynamic = 'force-dynamic';
+
 
 // Submit quiz attempt
 export async function POST(req: NextRequest) {
@@ -41,16 +43,18 @@ export async function POST(req: NextRequest) {
     let correctAnswers = 0;
     const evaluatedAnswers = answers.map((answer: any, index: number) => {
       const question = quiz.questions[index];
-      const isCorrect =
-        question?.options.some(
-          (opt: any) => opt.isCorrect && opt.id === answer.selectedOptionId
-        ) || false;
+      let isCorrect = false;
+
+      // Check if answer matches the correct answer
+      if (question && question.correct) {
+        isCorrect = question.correct === answer.selectedOption;
+      }
 
       if (isCorrect) correctAnswers++;
 
       return {
         questionId: question?.id,
-        selectedOptionId: answer.selectedOptionId,
+        answer: answer.selectedOption,
         isCorrect,
       };
     });
@@ -58,7 +62,7 @@ export async function POST(req: NextRequest) {
     const score = Math.round(
       (correctAnswers / quiz.questions.length) * 100
     );
-    const passed = score >= quiz.passingScore;
+    const passed = score >= 70;
 
     // Create quiz attempt
     const attempt = await prisma.quizAttempt.create({
@@ -66,11 +70,11 @@ export async function POST(req: NextRequest) {
         userId: user.id,
         quizId,
         score,
-        passed,
+        total: quiz.questions.length,
         answers: {
           create: evaluatedAnswers.map((ans: any) => ({
             questionId: ans.questionId,
-            selectedOption: ans.selectedOptionId,
+            answer: ans.answer,
             isCorrect: ans.isCorrect,
           })),
         },
@@ -79,7 +83,7 @@ export async function POST(req: NextRequest) {
 
     // Award XP if passed
     if (passed) {
-      const xpAmount = quiz.unitId ? XP_REWARDS.UNIT : XP_REWARDS.CHALLENGE;
+      const xpAmount = quiz.lessonId ? XP_REWARDS.LESSON : XP_REWARDS.CHALLENGE;
 
       await addXP(user.id, {
         amount: xpAmount,
@@ -98,8 +102,8 @@ export async function POST(req: NextRequest) {
           score,
           passed,
           message: passed
-            ? `Great! You passed with ${score}% ðŸŽ‰`
-            : `You need ${quiz.passingScore}% to pass. Try again!`,
+            ? `Great! You passed with ${score}% 🎉`
+            : `You need 70% to pass. Try again!`,
         },
       },
       { status: 200 }
@@ -112,5 +116,7 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+
 
 

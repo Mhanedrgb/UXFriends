@@ -2,6 +2,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getPersonalizedRecommendations } from "@/lib/ai";
 import { NextRequest, NextResponse } from "next/server";
+export const dynamic = 'force-dynamic';
+
 
 export async function GET(req: NextRequest) {
   try {
@@ -32,3 +34,5 @@ export async function GET(req: NextRequest) {
     );
   }
 }
+
+

@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  /* Skip prerendering API routes to avoid database initialization during build */
+  typescript: {
+    tsconfigPath: './tsconfig.json',
+  },
 };
 
 export default nextConfig;

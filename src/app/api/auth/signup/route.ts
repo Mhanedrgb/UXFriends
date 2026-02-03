@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/prisma";
+export const dynamic = 'force-dynamic';
+
 import bcrypt from "bcrypt";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -82,4 +84,7 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+
+
 

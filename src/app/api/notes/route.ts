@@ -1,6 +1,8 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+export const dynamic = 'force-dynamic';
+
 
 // GET notes for a lesson
 export async function GET(req: NextRequest) {
@@ -78,6 +80,7 @@ export async function POST(req: NextRequest) {
       data: {
         userId: user.id,
         lessonId,
+        title: "Note",
         content,
       },
     });
@@ -94,3 +97,5 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+

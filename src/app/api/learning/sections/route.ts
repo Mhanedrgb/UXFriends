@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { getUserLearningProgress, completeLesson } from "@/utils/learning";
 import { addXP, checkAndAwardBadges, updateStreak, XP_REWARDS } from "@/utils/gamification";
 import { NextRequest, NextResponse } from "next/server";
+export const dynamic = 'force-dynamic';
+
 
 // GET all sections with user progress
 export async function GET() {
@@ -34,3 +36,5 @@ export async function GET() {
     );
   }
 }
+
+

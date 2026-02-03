@@ -1,4 +1,6 @@
 import { auth } from "@/lib/auth";
+export const dynamic = 'force-dynamic';
+
 import { prisma } from "@/lib/prisma";
 import {
   generateProgressReport,
@@ -46,3 +48,6 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+
+

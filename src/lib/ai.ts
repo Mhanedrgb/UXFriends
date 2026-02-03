@@ -66,10 +66,8 @@ export const generateProgressReport = async (
     const report = await prisma.progressReport.create({
       data: {
         userId,
-        type: reportType,
-        strengths: parsed.strengths || "N/A",
-        weaknesses: parsed.weaknesses || "N/A",
-        recommendations: parsed.recommendations || "N/A",
+        summary: parsed.strengths ? `${parsed.strengths} | Weaknesses: ${parsed.weaknesses}` : parsed.summary || "Report generated",
+        recommendations: parsed.recommendations || "Keep practicing!",
       },
     });
 
