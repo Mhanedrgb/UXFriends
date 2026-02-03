@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
 
     const quiz = await prisma.quiz.findUnique({
       where: { id: quizId },
-      include: { questions: { include: { options: true } } },
+      include: { questions: true },
     });
 
     if (!quiz) {
@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
           score,
           passed,
           message: passed
-            ? `Great! You passed with ${score}% 🎉`
+            ? `Great! You passed with ${score}% ðŸŽ‰`
             : `You need ${quiz.passingScore}% to pass. Try again!`,
         },
       },
