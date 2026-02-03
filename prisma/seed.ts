@@ -1,15 +1,14 @@
 import { prisma } from "@/lib/prisma";
 
 async function main() {
-  console.log("🌱 Seeding database with initial data...");
+  console.log("ðŸŒ± Seeding database with initial data...");
 
   // Clean existing data
   await prisma.leaderboardEntry.deleteMany({});
   await prisma.progressReport.deleteMany({});
   await prisma.quizAnswer.deleteMany({});
   await prisma.quizAttempt.deleteMany({});
-  await prisma.quizOption.deleteMany({});
-  await prisma.quizQuestion.deleteMany({});
+    await prisma.quizQuestion.deleteMany({});
   await prisma.quiz.deleteMany({});
   await prisma.note.deleteMany({});
   await prisma.lessonCompletion.deleteMany({});
@@ -26,21 +25,21 @@ async function main() {
   // Create Sections
   const section1 = await prisma.section.create({
     data: {
-      title: "UX Fundamentals",icon: "🎯",
+      title: "UX Fundamentals",icon: "ðŸŽ¯",
       order: 1,
     },
   });
 
   const section2 = await prisma.section.create({
     data: {
-      title: "UI Design Essentials",icon: "🎨",
+      title: "UI Design Essentials",icon: "ðŸŽ¨",
       order: 2,
     },
   });
 
   const section3 = await prisma.section.create({
     data: {
-      title: "Advanced Interaction Design",icon: "✨",
+      title: "Advanced Interaction Design",icon: "âœ¨",
       order: 3,
     },
   });
@@ -228,23 +227,23 @@ async function main() {
   // Create Challenges
   const challenges = [
     {
-      title: "Redesign a Product Card",icon: "🎴",
+      title: "Redesign a Product Card",icon: "ðŸŽ´",
       xpReward: 30,
     },
     {
-      title: "Improve Signup Form",icon: "📝",
+      title: "Improve Signup Form",icon: "ðŸ“",
       xpReward: 30,
     },
     {
-      title: "Choose Color Palette",icon: "🎨",
+      title: "Choose Color Palette",icon: "ðŸŽ¨",
       xpReward: 30,
     },
     {
-      title: "Design Navigation",icon: "🧭",
+      title: "Design Navigation",icon: "ðŸ§­",
       xpReward: 30,
     },
     {
-      title: "Create Wireframes",icon: "📐",
+      title: "Create Wireframes",icon: "ðŸ“",
       xpReward: 30,
     },
   ];
@@ -255,8 +254,8 @@ async function main() {
     });
   }
 
-  console.log("✅ Database seeded successfully!");
-  console.log("📊 Created:");
+  console.log("âœ… Database seeded successfully!");
+  console.log("ðŸ“Š Created:");
   console.log("   - 3 Sections");
   console.log("   - 5 Units");
   console.log("   - 11 Lessons");
@@ -265,7 +264,7 @@ async function main() {
 
 main()
   .catch((e) => {
-    console.error("❌ Seeding error:", e);
+    console.error("âŒ Seeding error:", e);
     process.exit(1);
   })
   .finally(async () => {
